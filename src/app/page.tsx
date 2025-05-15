@@ -1,103 +1,108 @@
-import Image from "next/image";
+'use client';
+
+import { motion } from 'framer-motion';
+import Header from '@/components/Header';
+import ImageUpload from '@/components/ImageUpload';
+import PromptInput from '@/components/PromptInput';
+import ImageResult from '@/components/ImageResult';
+import { useAppStore } from '@/store/store';
+import { useEffect, useState } from 'react';
 
 export default function Home() {
-  return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm/6 text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-[family-name:var(--font-geist-mono)] font-semibold">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+  const { mainImage, generatedImage, similarImage } = useAppStore();
+  const [mounted, setMounted] = useState(false);
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+  // Handle hydration
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if (!mounted) return null;
+
+  return (
+    <>
+      <Header />
+      <div className="container mx-auto px-4 pt-24 pb-12">
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+          className="flex flex-col items-center text-center max-w-3xl mx-auto mb-12"
+        >
+          <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
+            Transform Your Images with AI
+          </h1>
+          <p className="text-xl text-gray-600">
+            Upload an image, describe what you want to change,
+            and let our AI do the magic.
+          </p>
+        </motion.div>
+
+        <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-8">
+          <div className="lg:col-span-2">
+            <div className="bg-white rounded-xl shadow-md p-6 mb-6">
+              <h2 className="text-xl font-semibold mb-4">Your Image</h2>
+              <ImageUpload />
+            </div>
+
+            {mainImage && (
+              <div className="bg-white rounded-xl shadow-md p-6">
+                <h2 className="text-xl font-semibold mb-4">What do you want to change?</h2>
+                <PromptInput />
+              </div>
+            )}
+          </div>
+
+          <div className="lg:col-span-1">
+            <div className="bg-white rounded-xl shadow-md p-6 sticky top-24">
+              <h2 className="text-xl font-semibold mb-4">Results</h2>
+              <ImageResult />
+              
+              {/* Credits info */}
+              <div className="mt-6 bg-blue-50 rounded-lg p-4">
+                <p className="text-sm text-blue-800 font-medium">
+                  Each generation uses 1 credit
+                </p>
+                <div className="mt-2">
+                  <button className="w-full bg-blue-600 text-white rounded-full py-2 text-sm font-medium hover:bg-blue-700 transition-colors">
+                    Get More Credits
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
-    </div>
+
+        {/* Google Lens Integration */}
+        {mainImage && (
+          <motion.div 
+            className="max-w-6xl mx-auto mt-12 bg-white rounded-xl shadow-md p-6"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2 }}
+          >
+            <h2 className="text-xl font-semibold mb-4">Find Similar Objects</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="aspect-[16/9] bg-gray-100 rounded-lg flex items-center justify-center">
+                <p className="text-gray-500">Object detection preview</p>
+              </div>
+              <div className="flex flex-col">
+                <p className="text-gray-600 mb-4">
+                  Our Google Lens integration can help you find similar objects in your original image.
+                </p>
+                <button className="self-start bg-green-600 text-white rounded-full px-4 py-2 text-sm font-medium hover:bg-green-700 transition-colors">
+                  Identify Objects
+                </button>
+              </div>
+            </div>
+          </motion.div>
+        )}
+        
+        {/* Footer */}
+        <footer className="mt-12 text-center text-gray-500 text-sm">
+          <p>© 2023 ImageMax. All rights reserved.</p>
+        </footer>
+      </div>
+    </>
   );
 }
