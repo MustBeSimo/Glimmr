@@ -1,23 +1,36 @@
 import { NextResponse } from 'next/server';
-import { ImageAnnotatorClient } from '@google-cloud/vision';
-import SerpApi from 'google-search-results-nodejs';
 
 export const runtime = 'edge';
 export const dynamic = 'force-dynamic';
 
-// Initialize SerpAPI client (fallback)
-const serpApi = new SerpApi(process.env.SERPAPI_KEY);
-
-// Create Vision client only when needed to avoid edge function issues
-const getVisionClient = () => {
-  return new ImageAnnotatorClient({
-    projectId: process.env.GCP_PROJECT_ID,
-    credentials: {
-      client_email: process.env.GCP_CLIENT_EMAIL,
-      private_key: process.env.GCP_PRIVATE_KEY?.replace(/\\n/g, '\n'),
+async function searchGoogleVision(base64Image: string) {
+  const response = await fetch('https://vision.googleapis.com/v1/images:annotate?key=' + process.env.GCP_VISION_KEY, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
     },
+    body: JSON.stringify({
+      requests: [{
+        image: {
+          content: base64Image
+        },
+        features: [{
+          type: 'WEB_DETECTION',
+          maxResults: 6
+        }]
+      }]
+    })
   });
-};
+
+  const data = await response.json();
+  return data.responses[0]?.webDetection?.visuallySimilarImages || [];
+}
+
+async function searchSerpApi(imageUrl: string) {
+  const response = await fetch(`https://serpapi.com/search.json?engine=google_lens&url=${encodeURIComponent(imageUrl)}&api_key=${process.env.SERPAPI_KEY}`);
+  const data = await response.json();
+  return data.visual_matches || [];
+}
 
 export async function POST(request: Request) {
   try {
@@ -28,17 +41,10 @@ export async function POST(request: Request) {
 
     try {
       // Try Google Cloud Vision first
-      const visionClient = getVisionClient();
-      const [result] = await visionClient.webDetection({
-        image: {
-          content: base64Image,
-        },
-      });
-
-      const webDetection = result.webDetection;
-      if (webDetection?.visuallySimilarImages?.length) {
+      const similarImages = await searchGoogleVision(base64Image);
+      if (similarImages.length > 0) {
         return NextResponse.json({
-          images: webDetection.visuallySimilarImages.map((img: any) => ({
+          images: similarImages.map((img: any) => ({
             url: img.url || '',
             title: img.url?.split('/').pop() || 'Similar Image',
             sourceUrl: img.url || '',
@@ -51,22 +57,13 @@ export async function POST(request: Request) {
     }
 
     // Fallback to SerpAPI Google Lens
-    return new Promise((resolve) => {
-      serpApi.search({
-        engine: 'google_lens',
-        url: image,
-      }, (data: any) => {
-        const visualMatches = data.visual_matches || [];
-        resolve(
-          NextResponse.json({
-            images: visualMatches.map((match: any) => ({
-              url: match.thumbnail,
-              title: match.title || 'Similar Image',
-              sourceUrl: match.link,
-            })).slice(0, 6),
-          })
-        );
-      });
+    const visualMatches = await searchSerpApi(image);
+    return NextResponse.json({
+      images: visualMatches.map((match: any) => ({
+        url: match.thumbnail,
+        title: match.title || 'Similar Image',
+        sourceUrl: match.link,
+      })).slice(0, 6),
     });
   } catch (error) {
     console.error('Similar images API error:', error);
