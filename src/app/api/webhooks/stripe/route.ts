@@ -1,17 +1,40 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { stripe } from '@/lib/stripe';
+import { getStripe } from '@/lib/stripe';
 import { createClient } from '@supabase/supabase-js';
 
 // This is your Stripe webhook secret for testing your endpoint locally.
 const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
 
 // Initialize Supabase client with service role for admin access
-const supabaseAdmin = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL || '',
-  process.env.SUPABASE_SERVICE_ROLE_KEY || ''
-);
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+// Route segment config for Vercel and Stripe webhooks
+export const runtime = 'nodejs'; // Stripe's webhook needs Node.js runtime
+export const dynamic = 'force-dynamic';
+export const maxDuration = 60; // Giving enough time for webhook processing
+export const preferredRegion = 'auto';
 
 export async function POST(req: NextRequest) {
+  if (!webhookSecret) {
+    console.error('Missing STRIPE_WEBHOOK_SECRET');
+    return NextResponse.json(
+      { error: 'Webhook secret not configured' },
+      { status: 500 }
+    );
+  }
+
+  if (!supabaseUrl || !supabaseServiceKey) {
+    console.error('Missing Supabase configuration');
+    return NextResponse.json(
+      { error: 'Database configuration not found' },
+      { status: 500 }
+    );
+  }
+
+  const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey);
+  const stripe = getStripe();
+  
   const payload = await req.text();
   const signature = req.headers.get('stripe-signature') as string;
 
@@ -21,7 +44,7 @@ export async function POST(req: NextRequest) {
     event = stripe.webhooks.constructEvent(
       payload,
       signature,
-      webhookSecret as string
+      webhookSecret
     );
   } catch (err: any) {
     console.error(`Webhook signature verification failed: ${err.message}`);
@@ -67,10 +90,10 @@ export async function POST(req: NextRequest) {
           payment_method: 'stripe',
         });
 
-      } catch (error) {
+      } catch (error: any) {
         console.error('Error updating user credits:', error);
         return NextResponse.json(
-          { error: 'Failed to update user credits' },
+          { error: error.message || 'Failed to update user credits' },
           { status: 500 }
         );
       }
@@ -78,11 +101,4 @@ export async function POST(req: NextRequest) {
   }
 
   return NextResponse.json({ received: true });
-}
-
-// Need to disable the default body parser to handle the webhook properly
-export const config = {
-  api: {
-    bodyParser: false,
-  },
-}; 
+} 

@@ -1,5 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { stripe } from '@/lib/stripe';
+import { getStripe } from '@/lib/stripe';
+
+export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
 
 export async function POST(req: NextRequest) {
   try {
@@ -11,6 +14,8 @@ export async function POST(req: NextRequest) {
         { status: 400 }
       );
     }
+
+    const stripe = getStripe();
 
     // Create a Stripe checkout session
     const session = await stripe.checkout.sessions.create({
@@ -31,10 +36,10 @@ export async function POST(req: NextRequest) {
     });
 
     return NextResponse.json({ sessionId: session.id, url: session.url });
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error creating checkout session:', error);
     return NextResponse.json(
-      { error: 'Failed to create checkout session' },
+      { error: error.message || 'Failed to create checkout session' },
       { status: 500 }
     );
   }
