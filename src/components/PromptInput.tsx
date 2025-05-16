@@ -4,7 +4,7 @@ import { Sparkles } from 'lucide-react';
 import { useAppStore } from '@/store/store';
 
 export default function PromptInput() {
-  const { prompt, setPrompt, mainImage, user, setGeneratedImage, setSimilarImage } = useAppStore();
+  const { prompt, setPrompt, mainImage, user, setGeneratedImage, setEditedImage } = useAppStore();
   const [isFocused, setIsFocused] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -46,7 +46,7 @@ export default function PromptInput() {
       
       // Update the store with the generated images
       setGeneratedImage(data.generatedImage);
-      setSimilarImage(data.similarImage);
+      setEditedImage(data.editedImage);
       
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred');

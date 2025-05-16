@@ -4,7 +4,7 @@ import { Download, Eye, EyeOff } from 'lucide-react';
 import { useAppStore } from '@/store/store';
 
 export default function ImageResult() {
-  const { generatedImage, similarImage } = useAppStore();
+  const { generatedImage, editedImage } = useAppStore();
   const [isHoveringGenerated, setIsHoveringGenerated] = useState(false);
   const [isHoveringSimilar, setIsHoveringSimilar] = useState(false);
 
@@ -64,9 +64,9 @@ export default function ImageResult() {
         )}
       </AnimatePresence>
 
-      {/* Similar Image */}
+      {/* Edited Image */}
       <AnimatePresence>
-        {similarImage && (
+        {editedImage && (
           <motion.div
             className="relative aspect-[16/9] rounded-lg overflow-hidden shadow-md"
             initial={{ opacity: 0, scale: 0.9 }}
@@ -77,8 +77,8 @@ export default function ImageResult() {
             onMouseLeave={() => setIsHoveringSimilar(false)}
           >
             <img 
-              src={similarImage} 
-              alt="Similar" 
+              src={editedImage} 
+              alt="Edited" 
               className="w-full h-full object-cover"
             />
             <AnimatePresence>
@@ -93,7 +93,7 @@ export default function ImageResult() {
                     className="rounded-full bg-white p-3 shadow-lg text-green-600"
                     whileHover={{ scale: 1.1 }}
                     whileTap={{ scale: 0.9 }}
-                    onClick={() => downloadImage(similarImage, 'imagemax-similar.jpg')}
+                    onClick={() => downloadImage(editedImage, 'imagemax-edited.jpg')}
                   >
                     <Download size={24} />
                   </motion.button>
@@ -101,14 +101,14 @@ export default function ImageResult() {
               )}
             </AnimatePresence>
             <div className="absolute top-2 left-2 bg-green-500 text-white px-3 py-1 rounded-full text-sm font-medium">
-              Similar
+              Edited
             </div>
           </motion.div>
         )}
       </AnimatePresence>
       
       {/* Compare Button - shows when both images are present */}
-      {generatedImage && similarImage && (
+      {generatedImage && editedImage && (
         <motion.div
           className="absolute z-10 bottom-4 right-4 md:left-1/2 md:right-auto md:-translate-x-1/2"
           initial={{ opacity: 0, y: 20 }}
@@ -127,7 +127,7 @@ export default function ImageResult() {
       )}
       
       {/* Empty state - show when no images are generated yet */}
-      {!generatedImage && !similarImage && (
+      {!generatedImage && !editedImage && (
         <div className="col-span-1 md:col-span-2 h-48 rounded-lg border-2 border-dashed border-gray-300 flex items-center justify-center">
           <p className="text-gray-500">Your generated images will appear here</p>
         </div>

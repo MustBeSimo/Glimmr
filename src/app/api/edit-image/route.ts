@@ -17,10 +17,21 @@ export async function POST(request: Request) {
 
     // Remove data URL prefix if present
     const base64Image = image.replace(/^data:image\/\w+;base64,/, '');
+    
+    // Convert base64 to binary
+    const binaryImage = atob(base64Image);
+    const array = new Uint8Array(binaryImage.length);
+    for (let i = 0; i < binaryImage.length; i++) {
+      array[i] = binaryImage.charCodeAt(i);
+    }
+    
+    // Create a Blob and File object (compatible with OpenAI's Uploadable type)
+    const blob = new Blob([array], { type: 'image/png' });
+    const imageFile = new File([blob], 'image.png', { type: 'image/png' });
 
     const openai = getOpenAIClient();
     const response = await openai.images.edit({
-      image: Buffer.from(base64Image, 'base64'),
+      image: imageFile,
       prompt,
       model: 'gpt-image-1',
       n: 1,
