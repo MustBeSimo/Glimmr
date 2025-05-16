@@ -168,3 +168,6 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Credentials
+qualified-acre-460017-n9-70ae44876e35.json
