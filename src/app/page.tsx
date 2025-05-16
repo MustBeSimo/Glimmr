@@ -1,67 +1,47 @@
 'use client';
 
-import { motion } from 'framer-motion';
-import Header from '@/components/Header';
-import ImageUpload from '@/components/ImageUpload';
-import PromptInput from '@/components/PromptInput';
-import ImageResult from '@/components/ImageResult';
-import { useAppStore } from '@/store/store';
-import { useEffect, useState, Suspense } from 'react';
-import ImageCapture from '@/components/ImageCapture';
-import SimilarImages from '@/components/SimilarImages';
-import ImageEditor from '@/components/ImageEditor';
+import { Suspense } from 'react';
+import MainImageUpload from '@/components/MainImageUpload';
+import GPTImageEdit from '@/components/GPTImageEdit';
+import GoogleLensResults from '@/components/GoogleLensResults';
 
 export default function Home() {
-  const { mainImage, generatedImage } = useAppStore();
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-
-  if (!mounted) return null;
-
   return (
-    <main className="min-h-screen bg-gray-100">
-      <div className="container mx-auto px-4 py-8">
-        <h1 className="text-4xl font-bold mb-8 text-gray-800">glimmr</h1>
+    <main className="min-h-screen bg-white p-6">
+      <div className="max-w-7xl mx-auto">
+        {/* Header */}
+        <header className="mb-6">
+          <h1 className="text-3xl font-bold text-black">glimmr</h1>
+        </header>
         
-        <div className="flex flex-col lg:flex-row gap-8">
-          {/* Main Image Section */}
-          <div className="flex-grow lg:w-2/3">
-            <div className="bg-white rounded-lg shadow-lg p-6 aspect-video">
-              <Suspense fallback={<div>Loading camera...</div>}>
-                <ImageCapture />
-              </Suspense>
-              
-              <Suspense fallback={<div>Loading editor...</div>}>
-                <ImageEditor />
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
+          {/* Left Card - Main Image Upload/Camera */}
+          <div className="lg:col-span-8 border border-gray-200 rounded-md overflow-hidden bg-white">
+            <div className="p-4 h-[calc(100vh-10rem)]">
+              <Suspense fallback={<div className="animate-pulse h-full bg-gray-100 rounded" />}>
+                <MainImageUpload />
               </Suspense>
             </div>
           </div>
 
-          {/* Right Side Sections */}
-          <div className="lg:w-1/3 space-y-8">
-            {/* GPT Image Section */}
-            <div className="bg-white rounded-lg shadow-lg p-6">
-              <h2 className="text-xl font-semibold mb-4">GPT Image</h2>
-              <div className="space-y-4">
-                <input
-                  type="text"
-                  placeholder="Describe what you want to change..."
-                  className="w-full p-2 border rounded-lg"
-                />
-                <button className="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700">
-                  Generate Image
-                </button>
+          {/* Right Column */}
+          <div className="lg:col-span-4 flex flex-col gap-4 h-[calc(100vh-10rem)]">
+            {/* Top Right - GPT Image Edit */}
+            <div className="flex-1 border border-gray-200 rounded-md overflow-hidden bg-white">
+              <div className="p-4 h-full">
+                <Suspense fallback={<div className="animate-pulse h-full bg-gray-100 rounded" />}>
+                  <GPTImageEdit />
+                </Suspense>
               </div>
             </div>
 
-            {/* Google Lens Section */}
-            <div className="bg-white rounded-lg shadow-lg p-6">
-              <Suspense fallback={<div>Loading similar images...</div>}>
-                <SimilarImages />
-              </Suspense>
+            {/* Bottom Right - Google Lens Results */}
+            <div className="flex-1 border border-gray-200 rounded-md overflow-hidden bg-white">
+              <div className="p-4 h-full">
+                <Suspense fallback={<div className="animate-pulse h-full bg-gray-100 rounded" />}>
+                  <GoogleLensResults />
+                </Suspense>
+              </div>
             </div>
           </div>
         </div>
